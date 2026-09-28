@@ -2,7 +2,7 @@ process MERGE_RESULTS {
     label 'process_low'
     publishDir "${params.outdir}", mode: 'copy'
 
-    container 'rroutsong/lifebit-immunedeconv-nf:latest'
+    container 'ghcr.io/openomics/lifebit-immunedeconv-nf:latest'
 
     input:
     path long_tsvs,    stageAs: 'long/*'
