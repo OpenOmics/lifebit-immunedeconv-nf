@@ -3,7 +3,7 @@ process DECONVOLUTE {
     label 'process_medium'
     publishDir "${params.outdir}/per_sample/${method}", mode: 'copy'
 
-    container 'docker://rroutsong/lifebit-immunedeconv-nf:latest'
+    container 'rroutsong/lifebit-immunedeconv-nf:latest'
 
     input:
     tuple val(sample), path(tpm), val(method)
