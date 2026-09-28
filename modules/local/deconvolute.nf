@@ -3,8 +3,6 @@ process DECONVOLUTE {
     label 'process_medium'
     publishDir "${params.outdir}/per_sample/${method}", mode: 'copy'
 
-    container 'ghcr.io/openomics/lifebit-immunedeconv-nf:latest'
-
     input:
     tuple val(sample), path(tpm), val(method)
 
@@ -28,7 +26,6 @@ process DECONVOLUTE {
         --tpm ${tpm} \\
         --method ${method} \\
         --species ${params.species} \\
-        --id_type ${params.id_type} \\
         --out ${sample}.${method}.long.tsv \\
         --summary ${sample}.${method}.summary.tsv \\
         ${tumor_flag} ${arrays_flag} ${cs_opts}

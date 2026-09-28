@@ -2,8 +2,6 @@ process MERGE_RESULTS {
     label 'process_low'
     publishDir "${params.outdir}", mode: 'copy'
 
-    container 'ghcr.io/openomics/lifebit-immunedeconv-nf:latest'
-
     input:
     path long_tsvs,    stageAs: 'long/*'
     path summary_tsvs, stageAs: 'summary/*'
@@ -15,7 +13,7 @@ process MERGE_RESULTS {
 
     script:
     """
-    Rscript ${projectDir}/bin/merge_deconv.R \\
+    merge_deconv.R \\
         --long_dir long \\
         --summary_dir summary \\
         --out_long deconv_all_long.tsv \\
