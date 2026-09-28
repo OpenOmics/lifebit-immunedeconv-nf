@@ -61,8 +61,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN R -e "install.packages(c('BiocManager','remotes','optparse','readr'), \
           repos='https://cloud.r-project.org', Ncpus=4)" \
  && R -e "BiocManager::install(version='3.19', ask=FALSE, update=FALSE)" \
- && R -e "BiocManager::install(c('immunedeconv','AnnotationDbi','org.Hs.eg.db','org.Mm.eg.db'), \
-          ask=FALSE, update=FALSE, Ncpus=4)"
+ && R -e "BiocManager::install(c('AnnotationDbi','org.Hs.eg.db','org.Mm.eg.db', \
+                                  'GSVA','GSEABase','preprocessCore','sva'), \
+          ask=FALSE, update=FALSE, Ncpus=4)" \
+ && R -e "options(warn=2); remotes::install_github('omnideconv/immunedeconv', \
+          upgrade='never', dependencies=TRUE, Ncpus=4)" \
+ && R -e "stopifnot(requireNamespace('immunedeconv', quietly=TRUE))" \
+ && R -e "suppressPackageStartupMessages(library(immunedeconv)); \
+          cat('[build-check] immunedeconv version: ', \
+              as.character(packageVersion('immunedeconv')), '\n', sep=''); \
+          cat('[build-check] R version: ', R.version.string, '\n', sep=''); \
+          cat('[build-check] available methods: ', \
+              paste(immunedeconv::deconvolution_methods, collapse=', '), '\n', sep='')"
 
 # -------- Final stage: strip build toolchain --------
 FROM rocker/r-ver:${R_VERSION}
