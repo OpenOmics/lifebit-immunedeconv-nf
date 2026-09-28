@@ -9,11 +9,10 @@ nextflow.enable.dsl = 2
 */
 
 // ---- Parameters (overridable via CLI or -params-file) ------------------
-params.input      = null                     // samplesheet CSV: sample,tpm
+params.input      = null                          // samplesheet CSV: sample,tpm
 params.outdir     = 'results'
 params.methods    = 'quantiseq,epic,mcp_counter'  // comma list
-params.species    = 'human'                  // 'human' or 'mouse'
-params.id_type    = 'auto'                   // auto|symbol|ensembl|entrez
+params.species    = 'human'                       // 'human' or 'mouse'
 params.tumor      = false
 params.arrays     = false
 
@@ -29,6 +28,7 @@ log.info """
  input       : ${params.input}
  outdir      : ${params.outdir}
  methods     : ${params.methods}
+ species     : ${params.species}
  tumor       : ${params.tumor}
  arrays      : ${params.arrays}
 ========================================================================
@@ -37,8 +37,9 @@ log.info """
 if (!params.input) exit 1, "ERROR: --input samplesheet.csv is required"
 
 // ---- Includes ----------------------------------------------------------
-include { DECONVOLUTE   } from './modules/local/deconvolute.nf'
-include { MERGE_RESULTS } from './modules/local/merge_results.nf'
+include { PREPARE_MATRIX } from './modules/local/prepare_matrix.nf'
+include { DECONVOLUTE    } from './modules/local/deconvolute.nf'
+include { MERGE_RESULTS  } from './modules/local/merge_results.nf'
 
 // ---- Workflow ----------------------------------------------------------
 workflow {
@@ -53,14 +54,17 @@ workflow {
             tuple(row.sample, file(row.tpm, checkIfExists: true))
         }
 
-    // Cross samples with methods
+    // Normalize each raw expression file to canonical `symbol \t <sample>` format
+    PREPARE_MATRIX(ch_samples)
+
+    // Cross prepared matrices with methods
     ch_methods = Channel.from(params.methods.tokenize(','))
-    ch_jobs    = ch_samples.combine(ch_methods)   // (sample, tpm, method)
+    ch_jobs    = PREPARE_MATRIX.out.matrix.combine(ch_methods)   // (sample, matrix, method)
 
     // Run deconvolution
     DECONVOLUTE(ch_jobs)
 
-    // Collect all per-(sample,method) long TSVs and merge
+    // Collect all per-(sample,method) outputs and merge
     MERGE_RESULTS(
         DECONVOLUTE.out.long_tsv.collect(),
         DECONVOLUTE.out.summary_tsv.collect()
