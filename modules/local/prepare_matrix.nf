@@ -14,7 +14,8 @@ process PREPARE_MATRIX {
 
     script:
     """
-    Rscript ${projectDir}/bin/prepare_matrix.R \\
+    set -o pipefail
+    prepare_matrix.R \\
         --input ${raw_tpm} \\
         --sample ${sample} \\
         --species ${params.species} \\
