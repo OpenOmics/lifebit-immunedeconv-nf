@@ -79,12 +79,12 @@ if (!is.na(sym_col)) {
     key_col <- switch(id_type, ensembl="ENSEMBL", entrez="ENTREZID")
 
     # Strip Ensembl version suffix
-    keys_in <- if (id_type == "ensembl") sub("\\\\..*\$", "", first_id) else first_id
+    keys_in <- if (id_type == "ensembl") sub("\\\\..*$", "", first_id) else first_id
     map <- suppressMessages(AnnotationDbi::select(
       orgdb, keys=unique(keys_in), columns="SYMBOL", keytype=key_col))
-    map <- map[!is.na(map\$SYMBOL) & nzchar(map\$SYMBOL), ]
+    map <- map[!is.na(map$SYMBOL) & nzchar(map$SYMBOL), ]
     map <- map[!duplicated(map[[key_col]]), ]
-    symbols <- map\$SYMBOL[match(keys_in, map[[key_col]])]
+    symbols <- map$SYMBOL[match(keys_in, map[[key_col]])]
   }
 }
 
@@ -94,8 +94,8 @@ mode(expr) <- "numeric"
 
 # If the file is single-sample and column header looks generic, rename to sample id
 if (ncol(expr) == 1) {
-  colnames(expr) <- opt\$sample
-  message("[prep] single-sample file; renaming data column to '", opt\$sample, "'")
+  colnames(expr) <- opt$sample
+  message("[prep] single-sample file; renaming data column to '", opt$sample, "'")
 }
 
 # ---- Clean: drop unmapped, non-finite, collapse duplicates --------------
@@ -135,5 +135,5 @@ message("[prep] final matrix: ", nrow(expr), " genes x ", ncol(expr), " samples"
 
 # ---- Write in canonical format -------------------------------------------
 out_df <- data.frame(gene_symbol=rownames(expr), expr, check.names=FALSE)
-write_tsv(out_df, opt\$out)
-message("[prep] wrote ", opt\$out)
+write_tsv(out_df, opt$out)
+message("[prep] wrote ", opt$out)
